@@ -1,31 +1,29 @@
 import express from "express";
 import cors from "cors";
-import { createClient } from "valkey";
+import { createClient } from "redis";
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Подключение к Valkey (НЕ Redis)
 const redis = createClient({
   url: process.env.REDIS_URL
 });
 
-redis.on("error", err => console.log("Valkey error:", err));
+redis.on("error", err => console.log("Redis error:", err));
 
 await redis.connect();
 
-// Дозащитим ошибки
+// сохранить запись
 async function addRecord(record) {
   await redis.rPush("records", JSON.stringify(record));
 }
 
+// получить все записи
 async function getRecords() {
   const arr = await redis.lRange("records", 0, -1);
   return arr.map(x => JSON.parse(x));
 }
-
-// ===== ROUTES =====
 
 app.post("/save-phone", async (req, res) => {
   try {
@@ -62,3 +60,4 @@ app.get("/records", async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("Backend running on " + PORT));
+
