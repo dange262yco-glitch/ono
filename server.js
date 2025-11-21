@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { createClient } from "@valkey/client";
+import { createClient } from "valkey";
 
 const app = express();
 app.use(express.json());
